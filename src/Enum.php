@@ -21,12 +21,24 @@ abstract class Enum
     public static function valueOf($testValue)
     {
         foreach (get_class_vars(static::class) as $name => $value) {
-            if ($value === $testValue) {
+            if ($value instanceof Enum && $value->getValue() === $testValue) {
                 return static::$$name;
             }
         }
 
         throw new \InvalidArgumentException("Value $testValue is not a valid option for the " . static::class . " enum");
+    }
+
+    public static function getValues()
+    {
+        $values = get_class_vars(static::class);
+        unset($values['_value']);
+
+        $values = array_map(function (Enum $enum) {
+            return $enum->getValue();
+        }, $values);
+
+        return $values;
     }
 
     private function __construct($value)
@@ -37,14 +49,6 @@ abstract class Enum
     public function __toString()
     {
         return (string)$this->_value;
-    }
-
-    public function getValues()
-    {
-        $values = get_class_vars(static::class);
-        unset($values['_value']);
-
-        return $values;
     }
 
     public function getValue()
